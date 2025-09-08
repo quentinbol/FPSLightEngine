@@ -3,6 +3,8 @@
 #include "../component/TransformComponent.hpp"
 #include "../component/MeshComponent.hpp"
 #include "../component/ShaderComponent.hpp"
+#include "../component/LightComponent.hpp"
+#include "../component/ColorComponent.hpp"
 #include "../../renderer/Camera.hpp"
 #include <glm/glm.hpp>
 #include <glm/gtc/matrix_transform.hpp>
@@ -31,6 +33,15 @@ public:
             shader.setMat4("model", model);
             shader.setMat4("view", view);
             shader.setMat4("projection", projection);
+
+            if (registry.hasComponent<Color>(entity)) {
+                Color& col = registry.getComponent<Color>(entity);
+                std::cout << "Setting color to: " << col.value.x << ", " << col.value.y << ", " << col.value.z << std::endl;
+                shader.setVec3("objectColor", col.value);
+            } else {
+                shader.setVec3("objectColor", glm::vec3(1.0f));
+            }
+
 
             mesh.draw();
         }
