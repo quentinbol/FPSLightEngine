@@ -31,6 +31,7 @@ App::App(int width, int height, const std::string &title)
     input->setCamera(camera);
     renderer = new RenderSystem();
     collisionSystem = new CollisionSystem();
+    lightSystem = new LightSystem();
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
 }
@@ -62,8 +63,10 @@ void App::run() {
 
         input->processInput(window, world->getRegistry(), player, 0.016f);
 
+        lightSystem->update(world->getRegistry(), camera);
         renderer->update(world->getRegistry(), camera, width, height);
         collisionSystem->update(world->getRegistry());
+
 
         glfwSwapBuffers(window);
     }

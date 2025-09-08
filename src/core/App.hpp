@@ -5,6 +5,7 @@
 #include "renderer/Camera.hpp"
 #include "../ecs/system/RendererSystem.hpp"
 #include "../ecs/system/CollisionSystem.hpp"
+#include "../ecs/system/LightSystem.hpp"
 #include "World.hpp"
 #include <glad/glad.h>
 #include <GLFW/glfw3.h>
@@ -22,6 +23,7 @@ class App {
         GLFWwindow *window;
         RenderSystem *renderer;
         CollisionSystem *collisionSystem;
+        LightSystem *lightSystem;
         Input *input;
         Camera *camera;
         int width, height;
