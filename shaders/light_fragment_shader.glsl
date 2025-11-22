@@ -11,33 +11,71 @@ uniform Light lights[16];
 uniform vec3 objectColor;
 uniform vec3 viewPos;
 
-in vec3 FragPos;  
-in vec3 Normal;  
+uniform sampler2D shadowMap;
+uniform mat4 lightSpaceMatrix;
+uniform int hasShadows;
 
+in vec3 FragPos;
+in vec3 Normal;
 out vec4 FragColor;
 
+float shadowPCF(vec4 fragPosLightSpace, float bias) {
+    vec3 projCoords = fragPosLightSpace.xyz / fragPosLightSpace.w;
+
+    projCoords = projCoords * 0.5 + 0.5;
+
+    if (projCoords.z > 1.0) 
+        return 0.0;
+
+    float shadow = 0.0;
+    vec2 texelSize = 1.0 / textureSize(shadowMap, 0);
+
+    for (int x = -1; x <= 1; ++x) {
+        for (int y = -1; y <= 1; ++y) {
+            float pcfDepth = texture(shadowMap, projCoords.xy + vec2(x, y) * texelSize).r;
+            float currentDepth = projCoords.z;
+            shadow += (currentDepth - bias) > pcfDepth ? 1.0 : 0.0;
+        }
+    }
+    shadow /= 9.0;
+
+    return shadow;
+}
+
 void main() {
-    vec3 norm = normalize(Normal);
-    vec3 viewDir = normalize(viewPos - FragPos);
+    vec3 N = normalize(Normal);
+    vec3 V = normalize(viewPos - FragPos);
 
-    vec3 result = vec3(0.0);
     vec3 ambient = 0.2 * objectColor;
+    vec3 lighting = vec3(0.0);
 
-    float shininess = 1.0;
-
-    for (int i = 0; i < numLights; i++) {
-        vec3 lightDir = normalize(lights[i].position - FragPos);
-
-        float diff = max(dot(norm, lightDir), 0.0);
-        vec3 diffuse = diff * lights[i].color * lights[i].intensity;
-
-        vec3 reflectDir = reflect(-lightDir, norm);
-        float spec = pow(max(dot(viewDir, reflectDir), 0.0), shininess);
-        vec3 specular = 0.3 * spec * lights[i].color * lights[i].intensity;
-
-        result += diffuse + specular;
+    float shadow = 0.0;
+    if (hasShadows > 0 && numLights > 0) {
+        vec3 L0 = normalize(lights[0].position - FragPos);
+        float bias = max(0.002 * (1.0 - dot(N, L0)), 0.001);
+        
+        vec4 fragLS = lightSpaceMatrix * vec4(FragPos, 1.0);
+        shadow = shadowPCF(fragLS, bias);
     }
 
-    result = result * objectColor + ambient;
-    FragColor = vec4(result, 1.0);
+    for (int i = 0; i < numLights; ++i) {
+        vec3 L = normalize(lights[i].position - FragPos);
+
+        float diff = max(dot(N, L), 0.0);
+        vec3 diffuse = diff * lights[i].color * lights[i].intensity;
+
+
+        vec3 H = normalize(L + V);
+        float shininess = 32.0;
+        float spec = pow(max(dot(N, H), 0.0), shininess);
+        vec3 specular = 0.3 * spec * lights[i].color * lights[i].intensity;
+
+
+        float shadowFactor = (i == 0) ? (1.0 - shadow) : 1.0;
+        lighting += shadowFactor * (diffuse + specular);
+    }
+
+
+    vec3 finalColor = (ambient + lighting) * objectColor;
+    FragColor = vec4(finalColor, 1.0);
 }
