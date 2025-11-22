@@ -37,7 +37,7 @@ public:
     }
 
     template<typename T>
-    T& getComponent(Entity e) {
+    T &getComponent(Entity e) {
         auto pool = getPool<T>();
         if (!pool) throw std::runtime_error("Component not found");
         return pool->get(e);
@@ -76,14 +76,14 @@ private:
     Entity nextEntity = 0;
 
     template<typename T>
-    ComponentPool<T>* getPool() {
+    ComponentPool<T> *getPool() {
         auto it = componentPools.find(std::type_index(typeid(T)));
         if (it == componentPools.end()) return nullptr;
         return static_cast<ComponentPool<T>*>(it->second.get());
     }
 
     template<typename T>
-    ComponentPool<T>* getOrCreatePool() {
+    ComponentPool<T> *getOrCreatePool() {
         auto pool = getPool<T>();
         if (!pool) {
             pool = new ComponentPool<T>();
