@@ -27,10 +27,10 @@ public:
         registry.addComponent<Collider>(plane, {glm::vec3(15.0f, 0.01f, 15.0f)});
 
         Entity cube = registry.createEntity();
-        registry.addComponent<Transform>(cube, {glm::vec3(0,0,0), glm::vec3(1,1,1)});
+        registry.addComponent<Transform>(cube, {glm::vec3(0,3,0), glm::vec3(1,1,1)});
         registry.addComponent<Mesh>(cube, Mesh::makeCube());
         registry.addComponent<Shader>(cube, {"../shaders/vertex_shader.glsl", "../shaders/light_fragment_shader.glsl"});
-        registry.addComponent<Color>(cube, {glm::vec3(0.0f, 0.5f, 1.0f)});
+        registry.addComponent<Color>(cube, {glm::vec3(1.0f, 0.8f, 1.0f)});
         registry.addComponent<Collider>(cube, {Mesh::makeCube().getHalfExtents()});
 
         Entity cube2 = registry.createEntity();
@@ -47,7 +47,7 @@ public:
         registry.addComponent<Transform>(pyramide, {glm::vec3(-5,1,0), glm::vec3(5,1,1), glm::vec3(2,2,2)});
         registry.addComponent<Mesh>(pyramide, Mesh::makePyramid());
         registry.addComponent<Shader>(pyramide, {"../shaders/vertex_shader.glsl", "../shaders/light_fragment_shader.glsl"});
-        registry.addComponent<Color>(pyramide, {glm::vec3(0.0f, 1.0f, 0.0f)});
+        //registry.addComponent<Color>(pyramide, {glm::vec3(0.0f, 1.0f, 0.0f)});
         registry.addComponent<Collider>(pyramide, {Mesh::makePyramid().getHalfExtents()});
 
         Entity player = registry.createEntity();
@@ -56,25 +56,24 @@ public:
         registry.addComponent<Player>(player, {}); 
         playerEntity = player;
 
-        Entity light = registry.createEntity();
-        registry.addComponent<Transform>(light, {glm::vec3(15, 10, 15)});
-        registry.addComponent<Mesh>(light, Mesh::makeCube());
-        registry.addComponent<Shader>(light, {"../shaders/vertex_shader.glsl", "../shaders/blue_fragment_shader.glsl"});
-        registry.addComponent<Light>(light, {glm::vec3(0.0f, 0.0f, 1.0f), 0.6f});
-
-        Entity light2 = registry.createEntity();
-        registry.addComponent<Transform>(light2, {glm::vec3(-15, 10, -15)});
-        registry.addComponent<Mesh>(light2, Mesh::makeCube());
-        registry.addComponent<Shader>(light2, {"../shaders/vertex_shader.glsl", "../shaders/yellow_fragment_shader.glsl"});
-        registry.addComponent<Color>(light2, {glm::vec3(1.0f, 1.0f, 0.0f)});
-        registry.addComponent<Light>(light2, {glm::vec3(1.0f, 1.0f, 0.0f), 0.6f});
-
-        Entity light3 = registry.createEntity();
-        registry.addComponent<Transform>(light3, {glm::vec3(0, 30, 0)});
-        registry.addComponent<Mesh>(light3, Mesh::makePyramid());
-        registry.addComponent<Shader>(light3, {"../shaders/vertex_shader.glsl", "../shaders/red_fragment_shader.glsl"});
-        registry.addComponent<Color>(light3, {glm::vec3(1.0f, 0.0f, 0.0f)});
-        registry.addComponent<Light>(light3, {glm::vec3(1.0f, 0.0f, 0.0f), 0.6f});
+        Entity sun = registry.createEntity();
+        registry.addComponent<Transform>(sun, { 
+            glm::vec3(10, 20, 10),
+            glm::vec3(0), 
+            glm::vec3(1) 
+        });
+        registry.addComponent<Light>(sun, {
+            .color = glm::vec3(1.0f, 0.95f, 0.8f),
+            .intensity = 0.8f,
+            .enabled = true,
+            .directional = true,
+            .castsShadows = true,
+            .shadowW = 2048,
+            .shadowH = 2048,
+            .nearPlane = 0.1f,
+            .farPlane = 100.0f,
+            .orthoSize = 25.0f
+        });
     }
 
     Registry& getRegistry() { return registry; }
