@@ -22,13 +22,13 @@ class CollisionSystem {
 
             for (size_t i = 0; i < entities.size(); ++i) {
                 Entity a = entities[i];
-                Transform& transA = registry.getComponent<Transform>(a);
-                Collider& colA = registry.getComponent<Collider>(a);
+                Transform &transA = registry.getComponent<Transform>(a);
+                Collider &colA = registry.getComponent<Collider>(a);
 
                 for (size_t j = i + 1; j < entities.size(); ++j) {
                     Entity b = entities[j];
-                    Transform& transB = registry.getComponent<Transform>(b);
-                    Collider& colB = registry.getComponent<Collider>(b);
+                    Transform &transB = registry.getComponent<Transform>(b);
+                    Collider &colB = registry.getComponent<Collider>(b);
 
                     if (checkAABBCollision(transA, colA, transB, colB)) {
                         if (hasPlayer && (a == player || b == player)) {
