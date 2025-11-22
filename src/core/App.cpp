@@ -22,7 +22,6 @@ App::App(int width, int height, const std::string &title)
         exit(-1);
     }
 
-
     glEnable(GL_DEPTH_TEST);
 
     world = new World();
@@ -31,42 +30,56 @@ App::App(int width, int height, const std::string &title)
     input->setCamera(camera);
     renderer = new RenderSystem();
     collisionSystem = new CollisionSystem();
-    lightSystem = new LightSystem();
+    physicsSystem = new PhysicsSystem();
+    playerMovementSystem = new PlayerMovementSystem();
 
     glfwSetInputMode(window, GLFW_CURSOR, GLFW_CURSOR_DISABLED);
+    
+    lastFrameTime = glfwGetTime();
 }
-
 
 App::~App() {
     delete renderer;
     delete collisionSystem;
+    delete physicsSystem;
+    delete playerMovementSystem;
     delete input;
     delete camera;
+    delete world;
     glfwDestroyWindow(window);
     glfwTerminate();
 }
 
-
 void App::run() {
     while (!glfwWindowShouldClose(window)) {
+        // Calcul du deltaTime
+        double currentTime = glfwGetTime();
+        float deltaTime = static_cast<float>(currentTime - lastFrameTime);
+        lastFrameTime = currentTime;
+        
+        // Limiter le deltaTime pour éviter les gros sauts
+        if (deltaTime > 0.1f) deltaTime = 0.1f;
+
         glfwPollEvents();
 
         glClearColor(0.1f, 0.1f, 0.15f, 1.0f);
         glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
         
         Entity player = world->getPlayerEntity();
-        Transform& playerTransform = world->getRegistry().getComponent<Transform>(player);
-
-        camera->setPosition(playerTransform.position);
-
-        camera->setYawPitchFromInput(input->getMouseOffset());
-
-        input->processInput(window, world->getRegistry(), player, 0.016f);
-
-        lightSystem->update(world->getRegistry(), camera);
+        
+        // Mise à jour des systèmes dans le bon ordre
+        
+        // 1. Input du joueur (applique les forces)
+        playerMovementSystem->processInput(window, world->getRegistry(), camera, deltaTime);
+        
+        // 2. Physique (gravité, vélocité, etc.)
+        physicsSystem->update(world->getRegistry(), deltaTime);
+        
+        // 3. Collision (déjà géré dans PhysicsSystem mais on peut garder pour d'autres vérifications)
+        // collisionSystem->update(world->getRegistry());
+        
+        // 4. Rendu
         renderer->update(world->getRegistry(), camera, width, height);
-        collisionSystem->update(world->getRegistry());
-
 
         glfwSwapBuffers(window);
     }
